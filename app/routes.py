@@ -1,6 +1,5 @@
 from flask import render_template, session, redirect, url_for, request, flash
-from flask_login import login_user, login_required, login_manager, logout_user
-from app import app, coffee_data, db, User
+from app import app, coffee_data, db, firebase, auth
 
 # Define a route for the homepage
 @app.route('/')
@@ -14,48 +13,44 @@ def index():
 # Create routes for login and registration
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user' in session:
+        return redirect(url_for('counter', user_id=session['user']))
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-
-        if user and user.password == password:
-            login_user(user)
-            flash('Login successful.', 'success')
-            return redirect(url_for('counter', user_id=user.id))
-        else:
-            flash('Login failed. Please try again.', 'error')
+        try:
+            user = auth.sign_in_with_email_and_password(username, password)
+            session['user'] = user['localId']
+            return redirect(url_for('counter', user_id=user['localId']))
+        except Exception as e:
+            flash(f'Failed to login: {e}', 'error')
 
     return render_template('login.html')
 
 @app.route('/logout')
-@login_required
 def logout():
-    logout_user()
+    session.pop('user', None)
     return redirect(url_for('homepage'))
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-
-        existing_user = User.query.filter_by(username=username).first()
-
-        if existing_user:
-            flash('Username already exists. Please choose a different username.', 'error')
-        else:
-            user = User(username=username, password=password)
-            db.session.add(user)
-            db.session.commit()
-            flash('Registration successful. You can now log in.', 'success')
-            return redirect(url_for('login'))
+        try:
+            user = auth.create_user_with_email_and_password(username, password)
+            session['user'] = user
+            user_id = user['localId']
+            return redirect(url_for('counter', user_id=user_id))
+        except Exception as e:
+            flash(f'Failed to register: {e}', 'error')
 
     return render_template('register.html')
 
 # Define a route for counter
-@app.route('/counter/<int:user_id>')
-@login_required
+# Define a route for counter
+@app.route('/counter/<string:user_id>')
 def counter(user_id):
     hot_cold_options = ["Hot", "Cold"]
     drink_type_options = [
@@ -65,57 +60,91 @@ def counter(user_id):
         "Frappuccino", "Creme Frappuccino"
     ]
     drink_size_options = ["Short", "Tall", "Grande", "Venti", "Trenta"]
-    user = User.query.get(user_id)
+    
+    # Fetch user data from Firebase based on the user_id
+    user_data = None
+    try:
+        user_data = firebase.database().child("users").child(user_id).get().val()
+    except:
+        flash('Failed to fetch user data', 'error')
+    
+    # Use a conditional statement to handle the case where user_data is None
+    if user_data is not None:
+        caffeine_count = user_data.get("caffeine", 0)
+    else:
+        caffeine_count = 0
 
-    return render_template('counter.html', user_id=user.id, counter=user.caffeine, hot_cold_options=hot_cold_options, drink_type_options=drink_type_options, drink_size_options=drink_size_options)
+    user = user_data
+    
+    return render_template('counter.html', user=user, user_id=user_id, counter=caffeine_count, hot_cold_options=hot_cold_options, drink_type_options=drink_type_options, drink_size_options=drink_size_options)
 
-@app.route('/reset/<int:user_id>')
-@login_required
+@app.route('/reset/<string:user_id>')
 def reset(user_id):
-    user = User.query.get(user_id)
-    user.caffeine = 0
-    db.session.commit()
-    return redirect(url_for('counter', user_id=user.id))
+    # Fetch user data from Firebase based on the user_id
+    user_ref = firebase.database().child("users").child(user_id)
+    user_data = user_ref.get().val()
 
-@app.route('/process/<int:user_id>', methods=['POST'])
-@login_required
+    if user_data is not None:
+        # Reset the caffeine counter to 0 and update it in the database
+        user_data["caffeine"] = 0
+        user_ref.set(user_data)
+    else:
+        flash('User not found', 'error')
+
+    user = user_data
+
+    return redirect(url_for('counter', user=user, user_id=user_id))
+
+@app.route('/process/<string:user_id>', methods=['POST'])
 def process(user_id):
-    user = User.query.get(user_id)
     hot_cold = request.form.get('hot_cold')
     drink_type = request.form.get('drink_type')
     drink_size = request.form.get('drink_size')
 
-    drinks = coffee_data.Drinks()
+    # Define your data for caffeine content
+    caffeine_data = coffee_data.Drinks()
+
     # Get the corresponding data from the Drinks class
     if hot_cold == 'Hot':
-        data = drinks.hot_drinks.get(drink_type)
+        data = caffeine_data.hot_drinks.get(drink_type)
     elif hot_cold == 'Cold':
-        data = drinks.cold_drinks.get(drink_type)
+        data = caffeine_data.cold_drinks.get(drink_type)
     else:
         data = None
 
-    if data is not None:
+    # Fetch user data from Firebase based on the user_id
+    user_ref = firebase.database().child("users").child(user_id)
+    user_data = user_ref.get().val()
+
+    if user_data is not None:
         # Determine the index for the selected drink size
-        if drink_size == 'Short':
-            index = 0
-        elif drink_size == 'Tall':
-            index = 1
-        elif drink_size == 'Grande':
-            index = 2
-        elif drink_size == 'Venti':
-            index = 3
-        elif drink_size == 'Trenta':
-            index = 4
+        if data is not None:
+            if drink_size == 'Short':
+                index = 0
+            elif drink_size == 'Tall':
+                index = 1
+            elif drink_size == 'Grande':
+                index = 2
+            elif drink_size == 'Venti':
+                index = 3
+            elif drink_size == 'Trenta':
+                index = 4
+            else:
+                index = -1  # Handle unknown sizes
+
+            # Get the corresponding number
+            caffeine_intake = data[index]
+
+            if caffeine_intake != -1:
+                # Update the user's caffeine counter
+                user_data["caffeine"] = user_data.get("caffeine", 0) + caffeine_intake
+                user_ref.set(user_data)
         else:
-            index = -1  # Handle unknown sizes
+            flash('Invalid drink type', 'error')
+    else:
+        flash('User not found', 'error')
 
-        # Get the corresponding number
-        number = data[index]
+    user = user_data
 
-        if number != -1:
-            user.caffeine += number
-            db.session.commit()
-
-        return redirect(url_for('counter', user_id=user.id))
-
+    return redirect(url_for('counter', user=user, user_id=user_id))
 

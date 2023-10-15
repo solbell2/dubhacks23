@@ -1,35 +1,22 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin
-from flask_migrate import Migrate
+import pyrebase
 
 # Create a Flask application
 app = Flask(__name__)
 app.secret_key = '6969'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # SQLite database file
-db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
-migrate = Migrate(app, db)
 
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
-    caffeine = db.Column(db.Integer, nullable=False, default=0)
-
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-        self.caffeine = 0
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'  # Specify the login route
-
-# Define a user loader function
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+config = {
+    "apiKey": "AIzaSyDEZ2aZKjFoCYhqDmX4jhZ7r0iGi2llj04",
+    "authDomain": "caffeine-tracker-d0485.firebaseapp.com",
+    "projectId": "caffeine-tracker-d0485",
+    "storageBucket": "caffeine-tracker-d0485.appspot.com",
+    "messagingSenderId": "491121167276",
+    "appId": "1:491121167276:web:4a75bc3785144fbc968809",
+    "measurementId": "G-862R05TVN7",
+    "databaseURL": "https://caffeine-tracker-d0485-default-rtdb.firebaseio.com"
+}
+firebase = pyrebase.initialize_app(config)
+auth = firebase.auth()
+db = firebase.database()
 
 from app import routes
