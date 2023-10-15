@@ -1,5 +1,8 @@
 # Ignore virtual environment directory
 venv/
 
+# Ignore database file
+instance/
+
 # Ignore Python bytecode files
 *.pyc
