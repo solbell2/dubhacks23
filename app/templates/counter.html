@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caffeine Tracker</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}?v=1">
+</head>
+<body>
+    <h1>Caffeine Tracker</h1>
+    <p>Current caffeine intake: {{ counter }}</p>
+    <a href="{{ url_for('reset') }}">Reset</a>
+    <a href="/index">Home</a>
+
+    <form method="POST" action="/process">
+        <!-- First Dropdown: Hot/Cold -->
+        <div class="dropdown">
+            <label for="hot_cold">Hot/Cold:</label>
+            <select id="hot_cold" name="hot_cold">
+                <option value="">Select</option>
+                {% for option in hot_cold_options %}
+                    <option value="{{ option }}">{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Second Dropdown: Drink Type -->
+        <div class="dropdown">
+            <label for="drink_type">Drink Type:</label>
+            <select id="drink_type" name="drink_type">
+                <option value="">Select</option>
+                {% for option in drink_type_options %}
+                    <option value="{{ option }}">{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Third Dropdown: Drink Size -->
+        <div class="dropdown">
+            <label for="drink_size">Drink Size:</label>
+            <select id="drink_size" name="drink_size">
+                <option value="">Select</option>
+                {% for option in drink_size_options %}
+                    <option value="{{ option }}">{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
