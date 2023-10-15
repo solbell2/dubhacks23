@@ -1,48 +1,70 @@
-/* Style the dropdown container */
+/* Apply styles to the body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2d7;
+    padding: 0;
+}
+
+/* Style the header */
+h1 {
+    background-color: #be8317;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    font-size: 48px;
+}
+
+/* Style the main content */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the dropdowns */
 .dropdown {
-    position: relative;
+    margin-bottom: 20px;
+}
+
+/* Style the buttons */
+button {
+    background-color: #199444;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background-color: #309854;
+}
+
+/* Add spacing to the Reset and Logout links */
+a {
+    margin-right: 10px;
+}
+
+/* Center the main content horizontally */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Use min-height instead of height for full viewport height */
+}
+
+/* Center the buttons and links horizontally */
+button,
+a {
     display: inline-block;
 }
 
-/* Style the dropdown button */
-.dropbtn {
-    background-color: #3498db;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-}
-
-/* Style the dropdown content (hidden by default) */
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-}
-
-/* Style the dropdown links */
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
+/* Make Login button 2x bigger and center it */
+.login-button {
+    font-size: 2em; 
     display: block;
-}
-
-/* Add a hover effect to the dropdown links */
-.dropdown-content a:hover {
-    background-color: #f1f1f1;
-}
-
-/* Show the dropdown content when the dropdown button is hovered over */
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-/* Add a caret icon (dropdown arrow) */
-.dropbtn::after {
-    content: "\25BC"; /* Unicode character for a down arrow */
-    padding-left: 10px;
+    margin: 0 auto;
 }

@@ -2,9 +2,12 @@
 <html>
 <head>
     <title>Homepage</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}?v=1">
 </head>
 <body>
-    <h1>Welcome to Caffeine Counter </h1>
-    <a href="/login">Login</a>
+    <h1>Welcome to Caffeine Tracker!</h1>
+    <form method="get" action="/login">
+        <button class="login-button" type="submit">Login</button>
+    </form>
 </body>
 </html>
