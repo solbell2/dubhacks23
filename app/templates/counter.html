@@ -7,10 +7,11 @@
 <body>
     <h1>Caffeine Tracker</h1>
     <p>Current caffeine intake: {{ counter }}</p>
-    <a href="{{ url_for('reset') }}">Reset</a>
-    <a href="/index">Home</a>
+    <a href="{{ url_for('reset', user_id=user_id) }}">Reset</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
 
-    <form method="POST" action="/process">
+
+    <form method="POST" action="{{ url_for('process', user_id=user_id) }}">
         <!-- First Dropdown: Hot/Cold -->
         <div class="dropdown">
             <label for="hot_cold">Hot/Cold:</label>
