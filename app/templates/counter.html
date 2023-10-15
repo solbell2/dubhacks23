@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Caffeine Tracker</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}?v=1">
 </head>
+
 <body>
     <h1>Caffeine Tracker</h1>
     <h2>Current caffeine intake: {{ counter }}</h2>
-    
+
     <!-- Reset Button -->
     <form method="get" action="{{ url_for('reset', user_id=user_id) }}">
         <button type="submit">Reset</button>
@@ -17,7 +19,7 @@
     <form method="get" action="{{ url_for('logout') }}">
         <button type="submit">Logout</button>
     </form>
-    
+
     <br>
 
     <form method="POST" action="{{ url_for('process', user_id=user_id) }}">
@@ -27,7 +29,7 @@
             <select id="hot_cold" name="hot_cold">
                 <option value="">Select</option>
                 {% for option in hot_cold_options %}
-                    <option value="{{ option }}">{{ option }}</option>
+                <option value="{{ option }}">{{ option }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -38,7 +40,7 @@
             <select id="drink_type" name="drink_type">
                 <option value="">Select</option>
                 {% for option in drink_type_options %}
-                    <option value="{{ option }}">{{ option }}</option>
+                <option value="{{ option }}">{{ option }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -49,12 +51,21 @@
             <select id="drink_size" name="drink_size">
                 <option value="">Select</option>
                 {% for option in drink_size_options %}
-                    <option value="{{ option }}">{{ option }}</option>
+                <option value="{{ option }}">{{ option }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <button type="submit">Submit</button>
+
+        <h2>Recent Drinks</h2>
+        <ul>
+            {% for drink in user.drinks[-10:] %}
+            <li>{{ drink.drink_type }} - {{ drink.drink_size }} ({{ drink.timestamp.strftime('%Y-%m-%d %H:%M:%S') }})
+            </li>
+            {% endfor %}
+        </ul>
     </form>
 </body>
+
 </html>
